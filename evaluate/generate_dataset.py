@@ -62,5 +62,5 @@ for prompt in questions["question"]:
 
 
 questions["answer"] = answers
-questions["contexts"] = context
+questions["context"] = context
 questions.to_csv("evaluate/questions_answers.csv", index=False)
