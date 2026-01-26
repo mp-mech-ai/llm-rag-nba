@@ -43,8 +43,5 @@ logs/
 *.swo
 *~
 
-# Fichiers de données
-data/
-
 # Jupyter Notebook
 .ipynb_checkpoints

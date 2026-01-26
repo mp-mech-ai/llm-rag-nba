@@ -3,9 +3,9 @@ import argparse
 import logging
 from typing import Optional
 
-from utils.config import INPUT_DIR # INPUT_DATA_URL (décommentez si besoin)
-from utils.data_loader import download_and_extract_zip, load_and_parse_files
-from utils.vector_store import VectorStoreManager
+from nba_assistant.config.config import INPUT_DIR # INPUT_DATA_URL (décommentez si besoin)
+from nba_assistant.llm.data_loader import download_and_extract_zip, load_and_parse_files
+from nba_assistant.llm.vector_store_management import VectorStoreManager
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -51,6 +51,9 @@ def run_indexing(input_directory: str, data_url: Optional[str] = None):
 
 
 if __name__ == "__main__":
+    from nba_assistant.utils.logging_handler import setup_logging
+    setup_logging()
+    
     parser = argparse.ArgumentParser(description="Script d'indexation pour l'application RAG")
     parser.add_argument(
         "--input-dir",

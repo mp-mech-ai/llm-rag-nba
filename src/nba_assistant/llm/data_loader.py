@@ -1,4 +1,3 @@
-# utils/data_loader.py
 import os
 import requests
 import zipfile
@@ -161,6 +160,7 @@ def extract_text_from_excel(file_path: str) -> Optional[Union[str, Dict[str, str
         import pandas as pd
         # Lire toutes les feuilles dans un dictionnaire de DataFrames
         excel_file = pd.ExcelFile(file_path)
+        
         sheets_data = {}
         for sheet_name in excel_file.sheet_names:
             df = excel_file.parse(sheet_name)
@@ -238,7 +238,8 @@ def load_and_parse_files(input_dir: str) -> List[Dict[str, any]]:
             elif ext == ".csv":
                 extracted_content = extract_text_from_csv(str(file_path))
             elif ext in [".xlsx", ".xls"]:
-                extracted_content = extract_text_from_excel(str(file_path))
+                # extracted_content = extract_text_from_excel(str(file_path))
+                logging.warning("Omission des fichiers Excel car une base de données est utilisée.")
             # Suppression de la gestion des fichiers HTML
             else:
                 logging.warning(f"Type de fichier non supporté ignoré: {relative_path}")
@@ -274,3 +275,16 @@ def load_and_parse_files(input_dir: str) -> List[Dict[str, any]]:
 
     logging.info(f"{len(documents)} documents chargés et parsés.")
     return documents
+
+
+if __name__=="__main__":
+    from nba_assistant.utils.logging_handler import setup_logging
+    setup_logging()
+
+    content = extract_text_from_excel("inputs/regular NBA.xlsx")
+    
+    with open("output.txt", "w") as f:
+        for k, v in content.items():
+            f.writelines(f"{k}: {v}")
+        
+    

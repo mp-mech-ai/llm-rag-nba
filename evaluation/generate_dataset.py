@@ -1,27 +1,25 @@
 import pandas as pd
-from MistralChat import generer_reponse, get_vector_store_manager
+from llm.llm import generer_reponse
+from llm.vector_store_management import create_vector_store_manager
 import logging
-from utils.config import (
-        MISTRAL_API_KEY, MODEL_NAME, SEARCH_K,
-        APP_TITLE, NAME
-    )
+from config.config import SEARCH_K, EVALUATION_DIR
+import os
 
+vector_store_manager = create_vector_store_manager()
 
-vector_store_manager = get_vector_store_manager()
-
-SYSTEM_PROMPT = f"""Tu es 'NBA Analyst AI', un assistant expert sur la ligue de basketball NBA.
+SYSTEM_PROMPT = """Tu es 'NBA Analyst AI', un assistant expert sur la ligue de basketball NBA.
 Ta mission est de répondre aux questions des fans en animant le débat.
 
 ---
-{{context_str}}
+{context_str}
 ---
 
 QUESTION DU FAN:
-{{question}}
+{question}
 
 RÉPONSE DE L'ANALYSTE NBA:"""
 
-questions = pd.read_csv("evaluate/questions.csv", comment="#", header=None, names=["question"])
+questions = pd.read_csv(os.path.join(EVALUATION_DIR, "questions.csv"), comment="#", header=None, names=["question"])
 
 answers = []
 context = []
@@ -35,7 +33,7 @@ for prompt in questions["question"]:
         logging.info(f"Recherche de contexte pour la question: '{prompt}' avec k={SEARCH_K}")
         search_results = vector_store_manager.search(prompt, k=SEARCH_K)
         logging.info(f"{len(search_results)} chunks trouvés dans le Vector Store.")
-    except Exception as e:
+    except Exception:
         logging.exception(f"Erreur pendant vector_store_manager.search pour la query: {prompt}")
         search_results = [] # On continue sans contexte si la recherche échoue
 
@@ -60,7 +58,6 @@ for prompt in questions["question"]:
     answers.append(generer_reponse(messages_for_api))
 
 
-
 questions["answer"] = answers
 questions["context"] = context
-questions.to_csv("evaluate/questions_answers.csv", index=False)
+questions.to_csv(os.path.join(EVALUATION_DIR, "questions_answers.csv"), index=False)

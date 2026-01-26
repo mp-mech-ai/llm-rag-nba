@@ -5,14 +5,15 @@ import os
 import pandas as pd
 from tqdm import tqdm
 import logging
-from utils.config import (
+from config.config import (
     MISTRAL_API_KEY,
-    MODEL_NAME
+    MODEL_NAME,
+    EVALUATION_DIR
 )
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(module)s - %(message)s')
 
-
-file_path = "evaluate/questions_answers_evaluations.csv"
+file_path = os.path.join(EVALUATION_DIR, "questions_answers_evaluations.csv")
 
 if not os.path.isfile(file_path):
     logging.info(f"File {file_path} does not exist. Starting evaluation from scratch...")
@@ -88,7 +89,7 @@ if not os.path.isfile(file_path):
         return chat_response.choices[0].message.parsed
 
     logging.info("Evaluating RAGs...")
-    dataset = pd.read_csv("evaluate/questions_answers.csv")
+    dataset = pd.read_csv(os.path.join(EVALUATION_DIR), "questions_answers.csv")
     questions = dataset["question"]
     answers = dataset["answer"]
     context = dataset["context"]
@@ -139,7 +140,7 @@ logging.info(f"{"Mean groundedness score:":40s} {evaluations['groundedness_score
 
 """
 OUTPUT 1st run:
-2026-01-25 11:42:37,675 - INFO - evaluate_ragas - File evaluate/questions_answers_evaluations.csv already exists. Skipping evaluation.
+2026-01-25 11:42:37,675 - INFO - evaluate_ragas - File evaluation/questions_answers_evaluations.csv already exists. Skipping evaluation.
 2026-01-25 11:42:37,682 - INFO - evaluate_ragas - Mean context relevance score:            2.06 / 3
 2026-01-25 11:42:37,682 - INFO - evaluate_ragas - Mean answer relevance score:             2.42 / 3
 2026-01-25 11:42:37,682 - INFO - evaluate_ragas - Mean groundedness score:                 2.17 / 3
