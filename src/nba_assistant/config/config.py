@@ -14,7 +14,7 @@ if not MISTRAL_API_KEY:
 
 # --- Modèles Mistral ---
 EMBEDDING_MODEL = "mistral-embed"
-MODEL_NAME = "mistral-small-latest" # Ou un autre modèle comme mistral-large-latest
+MODEL_NAME = "mistral-large-latest" # Ou un autre modèle comme mistral-large-latest
 
 # --- Prompts ---
 SYSTEM_PROMPT = """
@@ -28,7 +28,9 @@ Tu es un assistant intelligent spécialisé dans l'analyse et la recherche d'inf
 
 ## Priorisation des outils :
 
-Utilise SQLDatabaseToolkit pour répondre aux questions nécessitant des données structurées (ex : statistiques, classements, résultats de matchs, performances individuelles).
+Utilise SQLDatabaseToolkit pour répondre aux questions nécessitant des données structurées (ex : statistiques, classements, résultats de matchs, performances individuelles). 
+Essaye toujours de te rapproche le plus de ton objectif, quitte à effectuer plusieurs recherches. Effectue toutes les opérations mathématiques au travers de la requête.
+
 Utilise la recherche dans la base de connaissances vectorielle pour les questions ouvertes, les analyses qualitatives, ou les informations non structurées (ex : "Quelle équipe a la meilleure défense ?", "Quels sont les commentaires sur la performance de X joueur ?").
 
 

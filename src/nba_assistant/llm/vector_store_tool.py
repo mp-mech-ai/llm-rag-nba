@@ -38,15 +38,15 @@ class VectorStoreInput(BaseModel):
 
 @tool
 def vector_store_research(query_param:  VectorStoreInput) -> str:
-    query = query_param.query
-    nb_results = query_param.nb_results
     """
     Utilise cet outil pour faire une recherche dans la base de connaissance portant sur la saison NBA.
-    La "query" doit être concise mais exacte afin de pouvoir récupérer les informations les plus pertinentes.
+    La "query" doit être concise (moins de 100 caractères) mais exacte afin de pouvoir récupérer les informations les plus pertinentes.
     Le "nb_results" doit etre un nombre entre 1 et 10, et il definit le nombre de documents renvoyés par la recherche.
 
     Par exemple, si l'utilisateur demande "Quelle équipe à la meilleur défense", alors la "query" sera "Équipe avec la meilleure defense"
     """
+    query = query_param.query
+    nb_results = query_param.nb_results
 
     vector_store = create_vector_store_manager()
     try:
@@ -54,17 +54,11 @@ def vector_store_research(query_param:  VectorStoreInput) -> str:
     except Exception as e:
         logging.exception("Recherche dans la base de connaissance echouée")
         return f"Recherche dans la base de connaissance echouée: {e}"
-    
-    if search_results:
-        context_str = "\n\n---\n\n".join(
-            f"Source: {res['metadata'].get('source', 'Inconnue')}\n"
-            f"Contenu: {res['text']}"
-            for res in search_results
-        )
-    else:
-        context_str = (
-            "Aucune information pertinente trouvée dans la base "
-            "de connaissances pour cette question."
-        )
 
-    return SYSTEM_PROMPT.format(context_str=context_str, question=query)
+    context_str = "\n\n---\n\n".join(
+        f"Source: {res['metadata'].get('source', 'Inconnue')}\n"
+        f"Contenu: {res['text']}"
+        for res in search_results
+    )
+
+    return context_str

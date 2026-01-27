@@ -5,13 +5,14 @@ import os
 import pandas as pd
 from tqdm import tqdm
 import logging
-from config.config import (
+from nba_assistant.utils.logging_handler import setup_logging
+from nba_assistant.config.config import (
     MISTRAL_API_KEY,
     MODEL_NAME,
     EVALUATION_DIR
 )
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(module)s - %(message)s')
+setup_logging()
 
 file_path = os.path.join(EVALUATION_DIR, "questions_answers_evaluations.csv")
 
@@ -89,7 +90,7 @@ if not os.path.isfile(file_path):
         return chat_response.choices[0].message.parsed
 
     logging.info("Evaluating RAGs...")
-    dataset = pd.read_csv(os.path.join(EVALUATION_DIR), "questions_answers.csv")
+    dataset = pd.read_csv(os.path.join(EVALUATION_DIR, "questions_answers.csv"))
     questions = dataset["question"]
     answers = dataset["answer"]
     context = dataset["context"]
@@ -144,4 +145,13 @@ OUTPUT 1st run:
 2026-01-25 11:42:37,682 - INFO - evaluate_ragas - Mean context relevance score:            2.06 / 3
 2026-01-25 11:42:37,682 - INFO - evaluate_ragas - Mean answer relevance score:             2.42 / 3
 2026-01-25 11:42:37,682 - INFO - evaluate_ragas - Mean groundedness score:                 2.17 / 3
+"""
+
+
+"""
+OUTPUT 2nd run:
+2026-01-26 20:07:57,063 - INFO - root - Evaluations saved to evaluation/questions_answers_evaluations.csv
+2026-01-26 20:07:57,068 - INFO - root - Mean context relevance score:            2.61 / 3
+2026-01-26 20:07:57,069 - INFO - root - Mean answer relevance score:             2.78 / 3
+2026-01-26 20:07:57,069 - INFO - root - Mean groundedness score:                 2.78 / 3
 """
