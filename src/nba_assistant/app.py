@@ -21,6 +21,12 @@ setup_logging()
 def get_agent():
     return RAGAgent()
 
+def trim_output(output):
+    max_length = 1000
+    if len(output) > max_length:
+        return output[:max_length // 2] + "\n[...]\n" + output[-max_length // 2:]
+    return output
+
 # --- Creation du client Mistral ---
 try:
     agent = get_agent()
@@ -51,30 +57,39 @@ if prompt := st.chat_input(f"Posez votre question sur la {NAME}..."):
 
     # 2. Afficher indicateur + Générer la réponse de l'assistant via LLM
     with st.chat_message("assistant"):
+        tool_placeholder = st.empty()
         message_placeholder = st.empty()
         message_placeholder.text("...") # Indicateur simple
 
+        tool = ""
+        answer = ""
         # Génération de la réponse de l'assistant en utilisant la RAG
         logging.info(f"Génération de la réponse de l'assistant pour la question: {prompt}")
         try:
             for chunk in agent.stream(prompt):
                 if chunk["type"] == "tool_call":
                     logging.info(f"Tool call: {chunk['tool']} with input: {chunk['tool_input']}")
-                    message_placeholder.write(chunk['tool_input'])
+
+                    tool += f"Tool call: `{chunk['tool']}` with input: `{chunk['tool_input']}`"
+                    tool_placeholder.expander("Tool call", expanded=False).markdown(tool)
+
                 elif chunk["type"] == "tool_result":
                     logging.info(f"Tool result: {chunk['tool']} with output: {chunk['result']}")
-                    message_placeholder.write(chunk['result'])
+
+                    tool += f"Tool result: `{chunk['tool']}` with output: `{trim_output(chunk['result'])}`"
+                    tool_placeholder.expander("Tool call", expanded=False).write(tool)
                 elif chunk["type"] == "output":
                     logging.info(f"Output: {chunk['content']}")
-                    message_placeholder.write(chunk['content'] + "▮")
-                    time.sleep(0.5)
+                    message_placeholder.write(chunk['content'])
+                    answer += chunk['content'] + "\n"
 
         except RAGError as e:
             st.error(f"Une erreur est survenue lors de la generation de la réponse de l'assistant: {e}")
+            answer = "Une erreur est survenue lors de la generation de la réponse de l'assistant."
 
 
-    # # 3. Ajouter la réponse de l'assistant à l'historique (pour affichage UI)
-    # st.session_state.messages.append({"role": "assistant", "content": answer})
+    # 3. Ajouter la réponse de l'assistant à l'historique (pour affichage UI)
+    st.session_state.messages.append({"role": "assistant", "content": answer})
 
 # Petit pied de page optionnel
 st.markdown("---")
