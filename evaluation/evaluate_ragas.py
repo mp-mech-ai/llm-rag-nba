@@ -147,11 +147,10 @@ OUTPUT 1st run:
 2026-01-25 11:42:37,682 - INFO - evaluate_ragas - Mean groundedness score:                 2.17 / 3
 """
 
-
 """
 OUTPUT 2nd run:
-2026-01-26 20:07:57,063 - INFO - root - Evaluations saved to evaluation/questions_answers_evaluations.csv
-2026-01-26 20:07:57,068 - INFO - root - Mean context relevance score:            2.61 / 3
-2026-01-26 20:07:57,069 - INFO - root - Mean answer relevance score:             2.78 / 3
-2026-01-26 20:07:57,069 - INFO - root - Mean groundedness score:                 2.78 / 3
+2026-01-27 17:06:07,672 - INFO - root - Evaluations saved to evaluation/questions_answers_evaluations.csv
+2026-01-27 17:06:07,686 - INFO - root - Mean context relevance score:            2.89 / 3
+2026-01-27 17:06:07,687 - INFO - root - Mean answer relevance score:             2.92 / 3
+2026-01-27 17:06:07,687 - INFO - root - Mean groundedness score:                 2.92 / 3
 """

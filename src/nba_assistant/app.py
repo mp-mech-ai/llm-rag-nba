@@ -1,5 +1,6 @@
 import streamlit as st
 import logging
+import time
 
 # --- Importations depuis vos modules ---
 try:
@@ -7,9 +8,8 @@ try:
         APP_TITLE, NAME, MODEL_NAME, 
         MISTRAL_API_KEY, SEARCH_K, SYSTEM_PROMPT
     )
-    from nba_assistant.llm.vector_store_management import create_vector_store_manager, VectorStoreInitializationError
     from nba_assistant.utils.logging_handler import setup_logging
-    from nba_assistant.llm.llm import create_client, generer_reponse,ClientCreationError, RAGError
+    from nba_assistant.llm.llm import RAGError, RAGAgent
 except ImportError as e:
     st.error(f"Erreur d'importation: {e}. Vérifiez la structure de vos dossiers et les fichiers dans 'utils'.")
     st.stop()
@@ -17,28 +17,16 @@ except ImportError as e:
 # --- Configuration du Logging ---
 setup_logging()
 
+@st.cache_resource()
+def get_agent():
+    return RAGAgent()
+
 # --- Creation du client Mistral ---
 try:
-    client = create_client(MISTRAL_API_KEY)
-except ClientCreationError as e:
-    st.error(f"Une erreur est survenue lors de la connexion à l'API Mistral: {e}")
+    agent = get_agent()
+except RAGError as e:
+    st.error(f"Une erreur est survenue lors de la création de l'agent: {e}")
     st.stop()
-
-# --- Chargement du Vector Store (mis en cache) ---
-@st.cache_resource # Garde le manager chargé en mémoire pour la session
-def get_vector_store_manager():
-    logging.info("Chargement du Vector Store...")
-    return create_vector_store_manager()
-
-try:
-    vector_store_manager = get_vector_store_manager()
-except VectorStoreInitializationError:
-    st.error(
-        "La base de connaissances n'est pas disponible. "
-        "Veuillez vérifier l'index."
-    )
-    st.stop()
-
 
 # --- Initialisation de l'historique de conversation ---
 if "messages" not in st.session_state:
@@ -69,19 +57,24 @@ if prompt := st.chat_input(f"Posez votre question sur la {NAME}..."):
         # Génération de la réponse de l'assistant en utilisant la RAG
         logging.info(f"Génération de la réponse de l'assistant pour la question: {prompt}")
         try:
-            answer = generer_reponse(client, prompt, vector_store_manager, SEARCH_K, SYSTEM_PROMPT)
+            for chunk in agent.stream(prompt):
+                if chunk["type"] == "tool_call":
+                    logging.info(f"Tool call: {chunk['tool']} with input: {chunk['tool_input']}")
+                    message_placeholder.write(chunk['tool_input'])
+                elif chunk["type"] == "tool_result":
+                    logging.info(f"Tool result: {chunk['tool']} with output: {chunk['result']}")
+                    message_placeholder.write(chunk['result'])
+                elif chunk["type"] == "output":
+                    logging.info(f"Output: {chunk['content']}")
+                    message_placeholder.write(chunk['content'] + "▮")
+                    time.sleep(0.5)
+
         except RAGError as e:
-            st.error(str(e))
-            answer = "Une erreur technique est survenue."
-        except ValueError as e:
-            st.warning(str(e))
-            answer = "Veuillez poser une question valide."
+            st.error(f"Une erreur est survenue lors de la generation de la réponse de l'assistant: {e}")
 
-        # Affichage de la réponse complète
-        message_placeholder.write(answer)
 
-    # 3. Ajouter la réponse de l'assistant à l'historique (pour affichage UI)
-    st.session_state.messages.append({"role": "assistant", "content": answer})
+    # # 3. Ajouter la réponse de l'assistant à l'historique (pour affichage UI)
+    # st.session_state.messages.append({"role": "assistant", "content": answer})
 
 # Petit pied de page optionnel
 st.markdown("---")

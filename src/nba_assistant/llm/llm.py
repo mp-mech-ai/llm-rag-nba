@@ -1,6 +1,4 @@
 import logging
-from mistralai import Mistral
-from nba_assistant.llm.vector_store_management import VectorStoreManager
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_community.utilities import SQLDatabase
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
@@ -12,7 +10,7 @@ from nba_assistant.config.config import (
     MODEL_NAME, DATABASE_URL, DATABASE_TABLES_FOR_LLM, SYSTEM_PROMPT, MISTRAL_API_KEY
 )
 from langchain.agents import AgentExecutor
-from nba_assistant.utils.logging_handler import LogfireCallback
+from nba_assistant.utils.logging_handler import LogfireCallback, log_retry
 
 class AgentCreationError(Exception):
     pass

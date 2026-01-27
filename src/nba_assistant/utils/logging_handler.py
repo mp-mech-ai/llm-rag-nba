@@ -9,6 +9,17 @@ def setup_logging():
     )
     logfire.configure()
 
+def log_retry(retry_state):
+    exc = retry_state.outcome.exception()
+    wait = retry_state.next_action.sleep
+    logging.warning(
+        "Retrying LLM call (%s/%s) after %.1fs due to %s",
+        retry_state.attempt_number,
+        retry_state.stop.max_attempt_number,
+        wait,
+        exc,
+    )
+
 class LogfireCallback(BaseCallbackHandler):
     """Custom callback to send LangChain events to Logfire."""
     

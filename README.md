@@ -80,28 +80,37 @@ uv run streamlit run src/app.py
 L'application sera accessible à l'adresse http://localhost:8501 dans votre navigateur.
 
 
-## Modules principaux
+## Structure du projet
 
 ### `src/llm/vector_store.py`
 
-Gère l'index vectoriel FAISS et la recherche sémantique :
-- Chargement et découpage des documents
-- Génération des embeddings avec Mistral
-- Création et interrogation de l'index FAISS
-
-### `src/database/database_creation.py`
-
-Gère la base de données SQLite pour les interactions :
-- Enregistrement des questions et réponses
-- Stockage des feedbacks utilisateurs
-- Récupération des statistiques
-
-### `evaluation/generate_dataset.py`
-
-Création des réponses par rapport aux questions déjà existantes.
-
-### `evaluation/evaluate_ragas.py`
-
+```
+.
+├── data                                # Données brutes et base de connaissances
+├── evaluation
+│   ├── evaluate_ragas.py               # Script d'évaluation
+│   ├── generate_dataset.py             # Script de generation des réponses au fichier questions.csv
+│   └── questions.csv
+├── src
+│   ├── nba_assistant
+│   │   ├── app.py                      # Interface utilisateur Streamlit
+│   │   ├── config
+│   │   │   ├── config.py               # Paramètres personnalisables
+│   │   ├── database
+│   │   │   ├── database_creation.py    # Création de la base de données SQLite
+│   │   │   ├── load_excel_to_db.py     # Chargement des données depuis un fichier Excel
+│   │   │   ├── nba_db.db               # Base de données SQLite
+│   │   │   └── schemas.py              # Schemas Pydantic pour la base de données
+│   │   ├── llm
+│   │   │   ├── data_loader.py          # Chargement des données à partir de divers fichiers
+│   │   │   ├── indexer.py              # Script d'indexation des données avec FAISS
+│   │   │   ├── llm.py                  # Classe RAGAgent
+│   │   │   ├── sql_tool.py             # Tool pour la gestion de la base de données
+│   │   │   ├── vector_store_management.py  # Gestion de l'index FAISS
+│   │   │   └── vector_store_tool.py     # Tool pour la recherche sémantique
+│   │   └── utils
+│   │       ├── logging_handler.py      # Configuration du logging
+```
 Evalue les performances de l'application en utilisant des questions et des réponses fournies.
 [Évaluation d'un système RAG par Mistral](https://github.com/mistralai/cookbook/blob/main/mistral/evaluation/RAG_evaluation.ipynb)
 

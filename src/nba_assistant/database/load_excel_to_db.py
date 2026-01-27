@@ -65,8 +65,11 @@ def parse_teams(df: pd.DataFrame, db_path: str) -> None:
 
 def parse_stats(df: pd.DataFrame, db_path: str) -> None:
     df.columns = list(Stats.model_fields)
-
+    
     df["stat_code"] = list(Player.model_fields)
+    df.loc[df["stat_code"] == "pts", "stat_definition"] = "Points marqués totaux"
+    df.loc[df["stat_code"] == "fgm", "stat_definition"] = "Tirs réussis totaux (Field Goals Made)"
+    df.loc[df["stat_code"] == "fga", "stat_definition"] = "Tirs tentés totaux (Field Goals Attempted)"
 
     table_name = "Stats"
     conn = sqlite3.connect(db_path)
