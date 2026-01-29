@@ -30,6 +30,7 @@ wheels/
 *.egg
 *.pkl
 *.idx
+assets/*.md
 
 # Fichiers de logs
 *.log

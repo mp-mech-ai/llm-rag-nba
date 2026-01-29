@@ -9,6 +9,7 @@ from nba_assistant.llm.vector_store_management import VectorStoreManager
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+
 def run_indexing(input_directory: str, data_url: Optional[str] = None):
     """Exécute le processus complet d'indexation."""
     logging.info("--- Démarrage du processus d'indexation ---")
@@ -67,6 +68,12 @@ if __name__ == "__main__":
         # default=INPUT_DATA_URL, # Décommentez pour utiliser la valeur du .env par défaut
         default=None,
         help="URL optionnelle pour télécharger et extraire un fichier inputs.zip"
+    )
+    parser.add_argument(
+        "--use-gemini",
+        type=bool,
+        default=False,
+        help="Utiliser Gemini pour extraire le texte des fichiers PDF"
     )
     args = parser.parse_args()
 

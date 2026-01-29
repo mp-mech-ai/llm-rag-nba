@@ -25,7 +25,10 @@ from pathlib import Path
 from typing import List, Dict, Optional, Union
 import logging
 import numpy as np
-from tqdm import tqdm # Ajout de tqdm
+from tqdm import tqdm
+from dotenv import load_dotenv
+from google import genai
+import time
 
 # --- Importations pour OCR ---
 try:
@@ -51,11 +54,38 @@ except Exception as e:
     easyocr = None
     reader = None
 
-# Configuration du logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+def extract_text_from_pdf_with_gemini(file_path: str) -> Optional[str]:
+    load_dotenv()
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+    
+    t0 = time.time()
+    client = genai.Client(api_key=GEMINI_API_KEY)
+    # 1. Upload using the new 'files.upload' method
+    logging.info(f"Uploading {file_path}...")
+    file_upload = client.files.upload(file=file_path)
+    
+    # 2. Monitor the file state (standard for large PDFs)
+    while file_upload.state.name == "PROCESSING":
+        print(".", end="", flush=True)
+        time.sleep(2)
+        file_upload = client.files.get(name=file_upload.name)
 
-# --- Fonctions d'extraction de texte ---
+    # 3. Generate content with the new simplified syntax
+    prompt = """
+    This is a Reddit thread screenshot/PDF. 
+    1. Extract the Original Post (Title and Text).
+    2. Extract all Comments in a hierarchical Markdown list.
+    3. REMOVE all ads, promoted posts, and sidebar widgets.
+    """
 
+    response = client.models.generate_content(
+        model="gemini-flash-latest",
+        contents=[file_upload, prompt]
+    )
+    logging.info(f"Fichier {file_path} traité en {time.time() - t0:.2f} s.")
+    return response.text
+
+# Deprecated use extract_text_from_pdf
 def extract_text_from_pdf_with_ocr(file_path: str) -> Optional[str]:
     """Extrait le texte d'un fichier PDF en utilisant l'OCR (EasyOCR)."""
     if not fitz or not reader:
@@ -93,6 +123,7 @@ def extract_text_from_pdf_with_ocr(file_path: str) -> Optional[str]:
         logging.error(f"Erreur lors de l'ouverture ou du traitement OCR du PDF {file_path}: {e}")
         return None
 
+
 def extract_text_from_pdf(file_path: str) -> Optional[str]:
     """Extrait le texte d'un fichier PDF, avec fallback OCR si peu de texte est trouvé."""
     try:
@@ -102,7 +133,7 @@ def extract_text_from_pdf(file_path: str) -> Optional[str]:
         
         if len(text.strip()) < 100: # Si très peu de texte est extrait, tenter l'OCR
             logging.info(f"Peu de texte trouvé dans {file_path} via extraction standard ({len(text.strip())} caractères). Tentative d'OCR...")
-            ocr_text = extract_text_from_pdf_with_ocr(file_path)
+            ocr_text = extract_text_from_pdf_with_gemini(file_path)
             if ocr_text:
                 return ocr_text
             else:
@@ -114,7 +145,7 @@ def extract_text_from_pdf(file_path: str) -> Optional[str]:
     except Exception as e:
         logging.error(f"Erreur extraction PDF {file_path}: {e}. Tentative d'OCR en dernier recours...")
         # Si l'extraction standard échoue complètement, tenter l'OCR
-        ocr_text = extract_text_from_pdf_with_ocr(file_path)
+        ocr_text = extract_text_from_pdf_with_gemini(file_path)
         if ocr_text:
             return ocr_text
         else:
@@ -300,10 +331,16 @@ if __name__=="__main__":
     from nba_assistant.utils.logging_handler import setup_logging
     setup_logging()
 
-    content = extract_text_from_excel("inputs/regular NBA.xlsx")
-    
-    with open("output.txt", "w") as f:
-        for k, v in content.items():
-            f.writelines(f"{k}: {v}")
+    print("--- COMPARISON EasyOCR / Tesseract ---")
+
+    easy_ocr = extract_text_from_pdf_with_ocr("data/raw/Reddit 4.pdf")
+
+    gemini = extract_text_from_pdf_with_gemini("data/raw/Reddit 4.pdf")
+
+    with open("assets/easy_ocr.md", "w") as f:
+        f.write(easy_ocr)
+
+    with open("assets/gemini.md", "w") as f:
+        f.write(gemini)
+
         
-    
