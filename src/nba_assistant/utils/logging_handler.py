@@ -1,13 +1,22 @@
 import logging
 import logfire
 from langchain.callbacks.base import BaseCallbackHandler
+from dotenv import load_dotenv
+import os
 
 def setup_logging():
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s"
-    )
-    logfire.configure()
+    load_dotenv()
+    if os.environ.get("ON_STREAMLIT", False) == "True": 
+        logging.basicConfig(
+            level=logging.INFO,
+            format="%(asctime)s - %(levelname)s - %(name)s - %(message)s"
+        )
+    else:
+        logging.basicConfig(
+            level=logging.INFO,
+            format="%(asctime)s - %(levelname)s - %(name)s - %(message)s"
+        )
+        logfire.configure()
 
 def log_retry(retry_state):
     exc = retry_state.outcome.exception()

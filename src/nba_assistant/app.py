@@ -2,7 +2,6 @@ import streamlit as st
 import logging
 from nba_assistant.utils.st_helper import render_chat_history
 from dotenv import load_dotenv
-import os
 
 load_dotenv()
 
@@ -19,13 +18,7 @@ except ImportError as e:
     st.stop()
 
 # --- Configuration du Logging ---
-if os.environ.get("ON_STREAMLIT") == "True": 
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s"
-    )
-else:
-    setup_logging()
+setup_logging()
 
 @st.cache_resource()
 def get_agent():

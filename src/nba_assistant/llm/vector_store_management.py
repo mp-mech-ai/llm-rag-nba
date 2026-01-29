@@ -3,8 +3,8 @@ import os
 import pickle
 import faiss
 import numpy as np
-import logging
 import logfire
+import logging
 
 from typing import List, Dict, Optional, Any
 from pydantic import BaseModel, Field
@@ -23,12 +23,8 @@ from nba_assistant.config.config import (
     CHUNK_OVERLAP,
 )
 
-# ---------------------------------------------------------------------
-# Logging
-# ---------------------------------------------------------------------
-logger = logging.getLogger(__name__)
-logfire.configure()
-
+from nba_assistant.utils.logging_handler import setup_logging
+setup_logging()
 # ---------------------------------------------------------------------
 # Pydantic schemas
 # ---------------------------------------------------------------------
@@ -88,7 +84,7 @@ class VectorStoreManager:
                 os.path.exists(FAISS_INDEX_FILE)
                 and os.path.exists(DOCUMENT_CHUNKS_FILE)
             ):
-                logger.warning("Faiss index or chunks file not found")
+                logging.warning("Faiss index or chunks file not found")
                 return
 
             try:

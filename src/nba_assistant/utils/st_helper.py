@@ -1,5 +1,4 @@
 import streamlit as st
-import uuid
 
 def render_chat_history(messages):
     """
