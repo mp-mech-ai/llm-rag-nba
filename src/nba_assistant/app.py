@@ -1,6 +1,6 @@
 import streamlit as st
 import logging
-import time
+from nba_assistant.utils.st_helper import render_chat_history
 
 # --- Importations depuis vos modules ---
 try:
@@ -44,9 +44,7 @@ st.title(APP_TITLE)
 st.caption(f"Assistant virtuel pour {NAME} | Modèle: {MODEL_NAME}")
 
 # Affichage des messages de l'historique (pour l'UI)
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.write(message["content"])
+render_chat_history(st.session_state.messages)
 
 # Zone de saisie utilisateur
 if prompt := st.chat_input(f"Posez votre question sur la {NAME}..."):
@@ -89,7 +87,11 @@ if prompt := st.chat_input(f"Posez votre question sur la {NAME}..."):
 
 
     # 3. Ajouter la réponse de l'assistant à l'historique (pour affichage UI)
-    st.session_state.messages.append({"role": "assistant", "content": answer})
+    st.session_state.messages.append({
+        "role": "assistant", 
+        "content": answer,
+        "tools": tool
+    })
 
 # Petit pied de page optionnel
 st.markdown("---")

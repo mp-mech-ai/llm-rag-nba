@@ -12,6 +12,7 @@ Ce projet implémente un assistant virtuel basé sur le modèle Mistral, utilisa
 
 - Python 3.9+ 
 - Clé API Mistral (obtenue sur [console.mistral.ai](https://console.mistral.ai/))
+- Clé Google Gemini (obtenue sur [aistudio](https://aistudio.google.com/app/api-keys))
 
 ## Installation
 
@@ -34,14 +35,41 @@ Créez un fichier `.env` à la racine du projet avec le contenu suivant :
 
 ```
 MISTRAL_API_KEY=votre_clé_api_mistral
+GEMINI_API_KEY=votre_clé_api_gemini
 ```
 
 ## Structure du projet
 
 ```
-à rédiger
-
+.
+├── data                                # Données brutes et base de connaissances
+├── evaluation
+│   ├── evaluate_ragas.py               # Script d'évaluation
+│   ├── generate_dataset.py             # Script de generation des réponses au fichier questions.csv
+│   └── questions.csv
+├── src
+│   ├── nba_assistant
+│   │   ├── app.py                      # Interface utilisateur Streamlit
+│   │   ├── config
+│   │   │   ├── config.py               # Paramètres personnalisables
+│   │   ├── database
+│   │   │   ├── database_creation.py    # Création de la base de données SQLite
+│   │   │   ├── load_excel_to_db.py     # Chargement des données depuis un fichier Excel
+│   │   │   ├── nba_db.db               # Base de données SQLite
+│   │   │   └── schemas.py              # Schemas Pydantic pour la base de données
+│   │   ├── llm
+│   │   │   ├── data_loader.py          # Chargement des données à partir de divers fichiers
+│   │   │   ├── indexer.py              # Script d'indexation des données avec FAISS
+│   │   │   ├── llm.py                  # Classe RAGAgent
+│   │   │   ├── sql_tool.py             # Tool pour la gestion de la base de données
+│   │   │   ├── vector_store_management.py  # Gestion de l'index FAISS
+│   │   │   └── vector_store_tool.py     # Tool pour la recherche sémantique
+│   │   └── utils
+│   │       ├── logging_handler.py      # Configuration du logging
 ```
+Evalue les performances de l'application en utilisant des questions et des réponses fournies.
+[Évaluation d'un système RAG par Mistral](https://github.com/mistralai/cookbook/blob/main/mistral/evaluation/RAG_evaluation.ipynb)
+
 
 ## Utilisation
 
@@ -78,41 +106,6 @@ uv run streamlit run src/app.py
 ```
 
 L'application sera accessible à l'adresse http://localhost:8501 dans votre navigateur.
-
-
-## Structure du projet
-
-### `src/llm/vector_store.py`
-
-```
-.
-├── data                                # Données brutes et base de connaissances
-├── evaluation
-│   ├── evaluate_ragas.py               # Script d'évaluation
-│   ├── generate_dataset.py             # Script de generation des réponses au fichier questions.csv
-│   └── questions.csv
-├── src
-│   ├── nba_assistant
-│   │   ├── app.py                      # Interface utilisateur Streamlit
-│   │   ├── config
-│   │   │   ├── config.py               # Paramètres personnalisables
-│   │   ├── database
-│   │   │   ├── database_creation.py    # Création de la base de données SQLite
-│   │   │   ├── load_excel_to_db.py     # Chargement des données depuis un fichier Excel
-│   │   │   ├── nba_db.db               # Base de données SQLite
-│   │   │   └── schemas.py              # Schemas Pydantic pour la base de données
-│   │   ├── llm
-│   │   │   ├── data_loader.py          # Chargement des données à partir de divers fichiers
-│   │   │   ├── indexer.py              # Script d'indexation des données avec FAISS
-│   │   │   ├── llm.py                  # Classe RAGAgent
-│   │   │   ├── sql_tool.py             # Tool pour la gestion de la base de données
-│   │   │   ├── vector_store_management.py  # Gestion de l'index FAISS
-│   │   │   └── vector_store_tool.py     # Tool pour la recherche sémantique
-│   │   └── utils
-│   │       ├── logging_handler.py      # Configuration du logging
-```
-Evalue les performances de l'application en utilisant des questions et des réponses fournies.
-[Évaluation d'un système RAG par Mistral](https://github.com/mistralai/cookbook/blob/main/mistral/evaluation/RAG_evaluation.ipynb)
 
 
 ## Personnalisation
