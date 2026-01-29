@@ -331,12 +331,12 @@ if __name__=="__main__":
     from nba_assistant.utils.logging_handler import setup_logging
     setup_logging()
 
-    print("--- COMPARISON EasyOCR / Tesseract ---")
+    print("--- COMPARISON EasyOCR / Gemini ---")
 
     easy_ocr = extract_text_from_pdf_with_ocr("data/raw/Reddit 4.pdf")
-
+    print(easy_ocr[:100])
     gemini = extract_text_from_pdf_with_gemini("data/raw/Reddit 4.pdf")
-
+    print(gemini[:100])
     with open("assets/easy_ocr.md", "w") as f:
         f.write(easy_ocr)
 
