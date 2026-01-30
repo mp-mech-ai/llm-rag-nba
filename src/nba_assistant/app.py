@@ -7,10 +7,7 @@ load_dotenv()
 
 # --- Importations depuis vos modules ---
 try:
-    from nba_assistant.config.config import (
-        APP_TITLE, NAME, MODEL_NAME, 
-        MISTRAL_API_KEY, SEARCH_K, SYSTEM_PROMPT
-    )
+    from nba_assistant.config.config import APP_TITLE, NAME, MODEL_NAME
     from nba_assistant.utils.logging_handler import setup_logging
     from nba_assistant.llm.llm import RAGError, RAGAgent
 except ImportError as e:
