@@ -2,6 +2,9 @@
 
 Ce projet implémente un assistant virtuel basé sur le modèle Mistral, utilisant la technique de Retrieval-Augmented Generation (RAG) pour fournir des réponses précises et contextuelles à partir d'une base de connaissances personnalisée.
 
+Une démo est disponible [ici sur streamlit](https://nba-assistant.streamlit.app/).
+
+
 ## Fonctionnalités
 
 - 🔍 **Recherche sémantique** avec FAISS pour trouver les documents pertinents
