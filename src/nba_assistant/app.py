@@ -1,7 +1,8 @@
 import streamlit as st
 import logging
-from nba_assistant.utils.st_helper import render_chat_history
+from nba_assistant.utils.st_helper import render_chat_history, trim_output, render_tool_output, render_tool_input
 from dotenv import load_dotenv
+import time
 
 load_dotenv()
 
@@ -14,18 +15,37 @@ except ImportError as e:
     st.error(f"Erreur d'importation: {e}. Vérifiez la structure de vos dossiers et les fichiers dans 'utils'.")
     st.stop()
 
+st.markdown("""
+<style>
+    .typing-indicator {
+        display: inline-block;
+        font-size: 20px;
+        font-weight: bold;
+        color: #555;
+    }
+    .dot {
+        animation: blink 1.4s infinite both;
+        font-size: 25px;
+    }
+    .dot:nth-child(2) { animation-delay: .2s; }
+    .dot:nth-child(3) { animation-delay: .4s; }
+
+    @keyframes blink {
+        0% { opacity: .2; }
+        20% { opacity: 1; }
+        100% { opacity: .2; }
+    }
+</style>
+""", unsafe_allow_html=True)
+
+typing_dots = '<div class="typing-indicator"><span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></div>'
+
 # --- Configuration du Logging ---
 setup_logging()
 
 @st.cache_resource()
 def get_agent():
     return RAGAgent()
-
-def trim_output(output):
-    max_length = 1000
-    if len(output) > max_length:
-        return output[:max_length // 2] + "\n[...]\n" + output[-max_length // 2:]
-    return output
 
 # --- Creation du client Mistral ---
 try:
@@ -55,27 +75,56 @@ if prompt := st.chat_input(f"Posez votre question sur la {NAME}..."):
 
     # 2. Afficher indicateur + Générer la réponse de l'assistant via LLM
     with st.chat_message("assistant"):
-        tool_placeholder = st.empty()
-        message_placeholder = st.empty()
-        message_placeholder.text("...") # Indicateur simple
+        tools_container = st.container()
 
-        tool = ""
+        message_placeholder = st.empty()
+        message_placeholder.markdown(typing_dots, unsafe_allow_html=True)
+
         answer = ""
+        tool_steps = []
+        current_status = None
+
         # Génération de la réponse de l'assistant en utilisant la RAG
         logging.info(f"Génération de la réponse de l'assistant pour la question: {prompt}")
         try:
             for chunk in agent.stream(prompt):
+                # Appel d'un nouvel outil
                 if chunk["type"] == "tool_call":
                     logging.info(f"Tool call: {chunk['tool']} with input: {chunk['tool_input']}")
+                    t0 = time.time()
+                    tool_name = chunk['tool']
+                    tool_input = chunk['tool_input']
+                    current_status = tools_container.status(f"🛠️ Executing: {tool_name}...", expanded=False)
+                    with current_status:
+                        render_tool_input(tool_name, tool_input)
 
-                    tool += f"Tool call: `{chunk['tool']}` with input: `{chunk['tool_input']}`"
-                    tool_placeholder.expander("Tool call", expanded=False).markdown(tool)
+                    tool_steps.append({
+                        "name": tool_name,
+                        "input": tool_input,
+                        "output": None
+                    })
 
+                # Résultat d'un outil
                 elif chunk["type"] == "tool_result":
-                    logging.info(f"Tool result: {chunk['tool']} with output: {chunk['result']}")
+                    t1 = time.time()
+                    logging.info(f"Tool result: {chunk['tool']} with output: {chunk['result']} in {(t1-t0)*1000:.2f} ms")
+                    tool_name = chunk['tool']
+                    result_content = chunk['result']
 
-                    tool += f"Tool result: `{chunk['tool']}` with output: `{trim_output(chunk['result'])}`"
-                    tool_placeholder.expander("Tool call", expanded=False).write(tool)
+                    if current_status:
+                        with current_status:
+                            render_tool_output(tool_name, result_content)
+                        current_status.update(
+                            label=f"{tool_name} in {(t1-t0)*1000:.2f} ms", 
+                            state="complete", 
+                            expanded=False
+                        )
+                        current_status = None
+
+                    if tool_steps:
+                        tool_steps[-1]["output"] = result_content
+                
+                # Réponse finale du LLM
                 elif chunk["type"] == "output":
                     logging.info(f"Output: {chunk['content']}")
                     message_placeholder.write(chunk['content'])
@@ -90,7 +139,7 @@ if prompt := st.chat_input(f"Posez votre question sur la {NAME}..."):
     st.session_state.messages.append({
         "role": "assistant", 
         "content": answer,
-        "tools": tool
+        "tool_steps": tool_steps 
     })
 
 # Petit pied de page optionnel

@@ -140,12 +140,15 @@ if __name__ == "__main__":
     setup_logging()
     
     agent = RAGAgent()
-    question = "Quelle équipe contient le plus de joueurs dans le top 15 des meilleurs marqueurs de la saison ? Tu me donneras le nom de l'équipe ainsi que le nombre de joueurs de l'équipe qui sont dans le top 15. Tu me diras aussi ce que pense les fans de cette équipe"
-    question = "Quel est le pourcentage de tir réussi du top 3 des meilleurs marqueurs ?"
-    for chunk in agent.stream(question):
-        if chunk["type"] == "tool_call":
-            logging.info(f"Tool call: {chunk['tool']} with input: {chunk['tool_input']}")
-        elif chunk["type"] == "tool_result":
-            logging.info(f"Tool result: {chunk['tool']} with output: {chunk['result']}")
-        elif chunk["type"] == "output":
-            logging.info(f"Output: {chunk['content']}")
+    print(f"list tables: {agent.tools[2]._run()}")
+    print(f"schema: {agent.tools[1]._run("Teams")}")
+    # question = "Quelle équipe contient le plus de joueurs dans le top 15 des meilleurs marqueurs de la saison ? Tu me donneras le nom de l'équipe ainsi que le nombre de joueurs de l'équipe qui sont dans le top 15. Tu me diras aussi ce que pense les fans de cette équipe"
+    # # question = "Quel est le pourcentage de tir réussi du top 3 des meilleurs marqueurs ?"
+    # question = "Call successively every tool that you can use"
+    # for chunk in agent.stream(question):
+    #     if chunk["type"] == "tool_call":
+    #         logging.info(f"Tool call: {chunk['tool']} with input: {chunk['tool_input']}")
+    #     elif chunk["type"] == "tool_result":
+    #         logging.info(f"Tool result: {chunk['tool']} with output: {chunk['result']}")
+    #     elif chunk["type"] == "output":
+    #         logging.info(f"Output: {chunk['content']}")
