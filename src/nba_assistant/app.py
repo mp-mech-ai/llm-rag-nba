@@ -59,6 +59,11 @@ if "messages" not in st.session_state:
     # Message d'accueil initial
     st.session_state.messages = [{"role": "assistant", "content": f"Bonjour ! Je suis votre analyste IA pour la {NAME}. Posez-moi vos questions sur les équipes, les joueurs ou les statistiques, et je vous répondrai en me basant sur les données les plus récentes."}]
 
+if "processing" not in st.session_state:
+    st.session_state.processing = False
+
+def disable_callback():
+    st.session_state.processing = True
 # --- Interface Utilisateur Streamlit ---
 st.title(APP_TITLE)
 st.caption(f"Assistant virtuel pour {NAME} | Modèle: {MODEL_NAME}")
@@ -67,7 +72,7 @@ st.caption(f"Assistant virtuel pour {NAME} | Modèle: {MODEL_NAME}")
 render_chat_history(st.session_state.messages)
 
 # Zone de saisie utilisateur
-if prompt := st.chat_input(f"Posez votre question sur la {NAME}..."):
+if prompt := st.chat_input(f"Posez votre question sur la {NAME}...", disabled=st.session_state.processing, on_submit=disable_callback):
     # 1. Ajouter et afficher le message de l'utilisateur
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
@@ -141,6 +146,8 @@ if prompt := st.chat_input(f"Posez votre question sur la {NAME}..."):
         "content": answer,
         "tool_steps": tool_steps 
     })
+    st.session_state.processing = False
+    st.rerun()
 
 # Petit pied de page optionnel
 st.markdown("---")
