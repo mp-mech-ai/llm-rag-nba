@@ -28,8 +28,8 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-*.pkl
-*.idx
+# *.pkl Needed for streamlit deployement
+# *.idx
 assets/*.md
 
 # Fichiers de logs
